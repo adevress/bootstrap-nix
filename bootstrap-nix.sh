@@ -13,6 +13,26 @@ export MY_PERL_LIB_PREFIX=$DEST_DIR/perl-bootstrap
 export MY_PERL_LIB_DIR=${MY_PERL_LIB_PREFIX}/lib/perl5/
 
 
+export PERL5LIB=${DEST_DIR}/lib/perl5/5.24.0
+export PATH=${DEST_DIR}/bin:$PATH
+
+export CFLAGS="${CFLAGS} -I${DEST_DIR}/include"
+export LDFLAGS="${LDFLAGS} -L${DEST_DIR}/lib"
+
+function bootstrap_perl_int() {
+
+echo "** bootstrap perl interpreter **"
+pushd $(mktemp -d)
+wget http://www.cpan.org/src/5.0/perl-5.24.0.tar.gz
+tar xvzf perl-5.24.0.tar.gz
+pushd perl-5.24.0
+./Configure -des -Dprefix=$DEST_DIR && make -j
+make install 
+popd
+popd
+
+}
+
 function bootstrap_perl() {
 
 echo "** bootstrap Perl \( until it get removed ... \) "
@@ -22,6 +42,7 @@ pushd $(mktemp -d)
 wget http://search.cpan.org/CPAN/authors/id/H/HA/HAARG/local-lib-2.000018.tar.gz
 tar xvzf local-lib-2.000018.tar.gz
 pushd local-lib-2.000018
+
 
 perl Makefile.PL --bootstrap=${MY_PERL_LIB_PREFIX}
 make test && make install
@@ -48,7 +69,7 @@ source ${MY_PERL_LIB_PREFIX}/setup
 function perl_curl_import () {
 echo "*** install required perl modules "
 
-cpan SZBALINT/WWW-Curl-4.17.tar.gz
+cpan WWW::Curl
 
 cpan DBD:SQLite
 
@@ -96,6 +117,23 @@ popd
 }
 
 
+bootstrap_sqlite() {
+echo "** bootstrap sqlite **"
+pushd $(mktemp -d)
+wget https://www.sqlite.org/snapshot/sqlite-snapshot-201609191100.tar.gz
+tar xvzf sqlite-snapshot-201609191100.tar.gz
+pushd sqlite-snapshot-201609191100
+./configure --prefix=${DEST_DIR}
+make PREFIX=${DEST_DIR} -j
+make PREFIX=${DEST_DIR} install
+popd
+popd
+
+
+
+}
+
+
 function deploy_nix() {
 
 echo "** start nix compilation **"
@@ -128,10 +166,12 @@ make install
 }
 
 
-#bootstrap_perl
-perl_setup 
-#perl_curl_import
-#bootstrap_bzip2
-#bootstrap_lzma
 #bootstrap_curl
+bootstrap_sqlite 
+bootstrap_perl_int
+bootstrap_perl
+perl_setup 
+perl_curl_import
+#bootstrap_bzip2
+bootstrap_lzma
 deploy_nix
