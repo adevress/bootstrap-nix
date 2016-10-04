@@ -62,7 +62,7 @@ function perl_setup () {
 
 echo "*** setup perl env *** "
 
-source ${MY_PERL_LIB_PREFIX}/setup
+#source ${MY_PERL_LIB_PREFIX}/setup
 
 }
 
@@ -120,7 +120,7 @@ popd
 bootstrap_sqlite() {
 echo "** bootstrap sqlite **"
 pushd $(mktemp -d)
-wget https://www.sqlite.org/snapshot/sqlite-snapshot-201609191100.tar.gz
+curl -L https://www.sqlite.org/snapshot/sqlite-snapshot-201609191100.tar.gz -o sqlite-snapshot-201609191100.tar.gz
 tar xvzf sqlite-snapshot-201609191100.tar.gz
 pushd sqlite-snapshot-201609191100
 ./configure --prefix=${DEST_DIR}
@@ -167,11 +167,11 @@ make install
 
 
 #bootstrap_curl
-bootstrap_sqlite 
-bootstrap_perl_int
-bootstrap_perl
+#bootstrap_sqlite 
+#bootstrap_perl_int
+#bootstrap_perl
 perl_setup 
-perl_curl_import
+#perl_curl_import
 #bootstrap_bzip2
-bootstrap_lzma
+#bootstrap_lzma
 deploy_nix

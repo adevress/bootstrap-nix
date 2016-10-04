@@ -1,0 +1,23 @@
+
+NIX_DIR=
+
+#add nix utils to path
+export PATH="${NIX_DIR}/bin:${PATH}"
+
+# export PERL module path
+export PERL5LIB="${NIX_DIR}/lib/perl5/5.24.0/"
+
+# setup rooted perl env 
+source ${NIX_DIR}/perl-bootstrap/setup
+
+# add extra option if needed
+# ignore the fact the store is under a symlink 
+NIX_IGNORE_SYMLINK_STORE=1
+
+
+# add envs into the NIX path to fwd git ssh credential to nix 
+export NIX_PATH="ssh-auth-sock=$SSH_AUTH_SOCK:ssh-config-file=$HOME/.ssh/config:$NIX_PATH"
+
+
+#finalize by loading nix specific profile
+source ${NIX_DIR}/etc/profile.d/nix.sh
