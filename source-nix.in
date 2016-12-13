@@ -1,5 +1,5 @@
 
-NIX_DIR=
+NIX_DIR=/marconi_work/HBP_CDP2_it/nix/knl/nix-1.11.4
 
 #add nix utils to path
 export PATH="${NIX_DIR}/bin:${PATH}"
@@ -8,15 +8,19 @@ export PATH="${NIX_DIR}/bin:${PATH}"
 export PERL5LIB="${NIX_DIR}/lib/perl5/5.24.0/"
 
 # setup rooted perl env 
-source ${NIX_DIR}/perl-bootstrap/setup
+#source ${NIX_DIR}/perl-bootstrap/setup
 
 # add extra option if needed
 # ignore the fact the store is under a symlink 
-NIX_IGNORE_SYMLINK_STORE=1
+#NIX_IGNORE_SYMLINK_STORE=1
 
 
 # add envs into the NIX path to fwd git ssh credential to nix 
 export NIX_PATH="ssh-auth-sock=$SSH_AUTH_SOCK:ssh-config-file=$HOME/.ssh/config:$NIX_PATH"
+
+# this file will be source-imported into the nix build environment
+# can be used to import system specific option or parameters ( e.g libnss_ssd mapping )
+export NIX_SYSTEM_SOURCE=/marconi_work/HBP_CDP2_it/nix/knl/nix/var/system_source
 
 
 #finalize by loading nix specific profile

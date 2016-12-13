@@ -1,0 +1,12 @@
+
+#!/bin/bash
+
+NSS_PLUGIN_DIR=/projects/BrainTissue_tesp/knl/nix/var/nss-plugins
+
+## add nss plugins into directory
+if [[ "$out" != *"glibc"* ]]; then
+	export LD_LIBRARY_PATH="${NSS_PLUGIN_DIR}:$LD_LIBRARY_PATH"
+fi
+
+
+
