@@ -16,7 +16,7 @@ export MY_PERL_LIB_DIR=${MY_PERL_LIB_PREFIX}/lib/perl5/
 export PERL5LIB=${DEST_DIR}/lib/perl5/5.24.0
 export PATH=${DEST_DIR}/bin:$PATH
 
-export CFLAGS="${CFLAGS} -I${DEST_DIR}/include"
+export CFLAGS=" -fPIC ${CFLAGS} -I${DEST_DIR}/include"
 export LDFLAGS="${LDFLAGS} -L${DEST_DIR}/lib"
 
 function bootstrap_perl_int() {
@@ -95,8 +95,12 @@ pushd $(mktemp -d)
 wget http://www.bzip.org/1.0.6/bzip2-1.0.6.tar.gz
 tar xvzf bzip2*
 pushd bzip2-1.0.6
-make PREFIX=${DEST_DIR} -j 
+make PREFIX=${DEST_DIR} -j V=1
 make PREFIX=${DEST_DIR} install
+make clean
+# shared version now
+make PREFIX=${DEST_DIR} -f Makefile-libbz2_so -j V=1
+cp *.so* ${DEST_DIR}/lib
 popd
 popd
 
@@ -111,6 +115,10 @@ pushd curl-7.50.3
 ./configure --prefix=${DEST_DIR}
 make PREFIX=${DEST_DIR} -j
 make PREFIX=${DEST_DIR} install
+
+# fix issue with perl curl module
+sed -i 's@#define CURL_STRICTER@//#define CURL_STRICTER@g' ${DEST_DIR}/include/curl/curl.h
+
 popd
 popd
 
@@ -139,8 +147,8 @@ function deploy_nix() {
 echo "** start nix compilation **"
 echo "*** configure nix"
 
-export CC="${NIX_CC}"
-export CXX="${NIX_CXX}"
+export CC="${NIX_CC:gcc}"
+export CXX="${NIX_CXX:g++}"
 export NIX_INCLUDES="${NIX_INCLUDES} -I ./src/libutil -I./ "
 
 export LD_LIBRARY_PATH="${DEST_DIR}/lib:${LD_LIBRARY_PATH}"
@@ -149,6 +157,7 @@ export PKG_CONFIG_PATH="${DEST_DIR}/lib/pkgconfig:${PKG_CONFIG_PATH}"
 export LIBLZMA_LIBS="-L${DEST_DIR}/lib -llzma"
 export CXXFLAGS="-pthread ${NIX_INCLUDES} -I${DEST_DIR}/include -L${DEST_DIR}/lib" 
 export CPPFLAGS="${CXXFLAGS}"
+export CFLAGS=" -I${DEST_DIR}/include "
 
 
 echo "*** configure **"
@@ -160,7 +169,7 @@ echo "compile flags: ${CXXFLAGS} "
 make  -e V=1 
 
 echo "*** install nix under prefix ${DEST_DIR}"
-make install
+make install V=1
 
 
 }
@@ -169,8 +178,7 @@ make install
 #bootstrap_curl
 #bootstrap_sqlite 
 #bootstrap_perl_int
-#bootstrap_perl
-perl_setup 
+#perl_setup 
 #perl_curl_import
 #bootstrap_bzip2
 #bootstrap_lzma
